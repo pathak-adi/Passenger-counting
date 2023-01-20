@@ -1,8 +1,28 @@
 from datetime import datetime
 import struct
 import sys
-
+import time
+import requests
+import json
 import serial
+
+
+def send_data(cin, cout):
+    url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
+    t = int(time.time())
+    body = {
+        'datetime': t,
+        'imei': 'PCounter',
+        'data': {'in': cin, 'out': cout},
+    }
+    try:
+        response = requests.post(url, json.dumps(body))
+        print(response.json())
+    except:
+        print('Error sending data')
+        response = []
+
+    return response
 
 
 if len(sys.argv) != 2:
@@ -13,8 +33,9 @@ device = sys.argv[1]
 ser = serial.Serial(device, 115200, timeout=None)
 
 ser.write("0".encode("UTF-8"))
-while(True):
+while (True):
     ser.read_until(b'\x41\x41')
     hi, lo = struct.unpack('2B', ser.read(2))
     ser.write("0".encode("UTF-8"))
     print(datetime.now(), hi, lo)
+    send_data(hi, lo)
