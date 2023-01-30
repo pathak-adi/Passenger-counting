@@ -34,7 +34,8 @@ def boot_notification():
             </head>
             ​
             <body style="margin: 0; font-family:Arial, sans-serif; background-color:#f3f3f3;">
-            <p>Passenger counter switched on. Initial count: 0 passengers. Starting counting process..... </p>
+            <h3>Passenger counter switched on.</h3>
+            <br> <p>Initial count: 0 passengers. <br> Starting counting process..... </p>
             </body>
             </html>
             """
