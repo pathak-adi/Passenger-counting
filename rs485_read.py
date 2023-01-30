@@ -6,12 +6,14 @@ import requests
 import json
 import serial
 
+from websocket import create_connection
 from utils import boot_notification
 
 
 def send_data(cin, cout, c_n):
     url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
     t = int(time.time())
+
     body = {
         'datetime': t,
         'imei': 'PCounter',
@@ -24,6 +26,18 @@ def send_data(cin, cout, c_n):
         print('Error sending data')
         response = []
 
+
+
+    try:
+        item = {
+            "action": "sendMessage",
+            "data": json.dumps(body)
+
+        }
+        ws.send(json.dumps(item))
+
+    except:
+        ws.close()
     return response
 
 
@@ -35,6 +49,7 @@ device = sys.argv[1]
 ser = serial.Serial(device, 115200, timeout=None)
 
 boot_notification()
+ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
 ser.write("0".encode("UTF-8"))
 passenger_onboard = 0
 while True:

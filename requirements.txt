@@ -6,3 +6,4 @@ pyserial>=3.5
 json
 datetime
 requests~=2.26.0
+websocket-client~=0.58.0
