@@ -6,6 +6,8 @@ import requests
 import json
 import serial
 
+from utils import boot_notification
+
 
 def send_data(cin, cout, c_n):
     url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
@@ -32,6 +34,7 @@ device = sys.argv[1]
 
 ser = serial.Serial(device, 115200, timeout=None)
 
+boot_notification()
 ser.write("0".encode("UTF-8"))
 passenger_onboard = 0
 while True:
