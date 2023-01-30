@@ -7,13 +7,13 @@ import json
 import serial
 
 
-def send_data(cin, cout):
+def send_data(cin, cout, c_n):
     url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
     t = int(time.time())
     body = {
         'datetime': t,
         'imei': 'PCounter',
-        'data': {'in': cin, 'out': cout},
+        'data': {'in': cin, 'out': cout, 'count': c_n},
     }
     try:
         response = requests.post(url, json.dumps(body))
@@ -33,9 +33,11 @@ device = sys.argv[1]
 ser = serial.Serial(device, 115200, timeout=None)
 
 ser.write("0".encode("UTF-8"))
-while (True):
+passenger_onboard = 0
+while True:
     ser.read_until(b'\x41\x41')
     hi, lo = struct.unpack('2B', ser.read(2))
     ser.write("0".encode("UTF-8"))
-    print(datetime.now(), hi, lo)
-    send_data(hi, lo)
+    passenger_onboard = passenger_onboard + hi - lo
+    print(datetime.now(), hi, lo, passenger_onboard)
+    send_data(hi, lo, passenger_onboard)
