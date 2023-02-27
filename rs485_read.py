@@ -5,6 +5,7 @@ import time
 import requests
 import json
 import serial
+import urllib
 
 from websocket import create_connection
 from utils import boot_notification
@@ -26,8 +27,6 @@ def send_data(cin, cout, c_n):
         print('Error sending data')
         response = []
 
-
-
     try:
         item = {
             "action": "sendMessage",
@@ -41,12 +40,26 @@ def send_data(cin, cout, c_n):
     return response
 
 
+def internet_on():
+    try:
+        urllib.request.urlopen('https://google.com', timeout=10)
+        return True
+    except urllib.request.URLError as err:
+        return False
+
+
 if len(sys.argv) != 2:
     print("Usage: ./rs485_read.py <RS485 TTY device>")
     sys.exit(1)
 device = sys.argv[1]
 
 ser = serial.Serial(device, 115200, timeout=None)
+
+internet = internet_on()
+while internet == False:
+    internet = internet_on()
+    time.sleep(15)
+    print('no intenet')
 
 boot_notification()
 ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
