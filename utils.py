@@ -16,7 +16,7 @@ def connected_to_internet(url='http://www.google.com/', timeout=5):
     return False
 
 
-def boot_notification():
+def boot_notification(passengers):
     # check if connected to internet
     resp = connected_to_internet()
     if resp:
@@ -35,7 +35,7 @@ def boot_notification():
             ​
             <body style="margin: 0; font-family:Arial, sans-serif; background-color:#f3f3f3;">
             <h3>Passenger counter switched on.</h3>
-            <br> <p>Initial count: 0 passengers. <br> Starting counting process..... </p>
+            <br> <p>Initial count: {passengers} passengers. <br> Starting counting process..... </p>
             </body>
             </html>
             """
