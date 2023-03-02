@@ -41,7 +41,7 @@ async def send_data(cin, cout, c_n, t):
     }
     try:
         response = requests.post(url, json.dumps(body))
-        logging.info(response.json())
+        # logging.info(response.json())
     except:
         logging.error('Error sending data')
         logging.error(f'Internet connectivity: {connected_to_internet()}')
@@ -74,23 +74,29 @@ async def main(device,internet):
     passenger_onboard = 0
 
     while True:
-        hi, lo = await get_counter_data(ser)
-        passenger_onboard = passenger_onboard + hi - lo
-        t = int(time.time())
+        hi, lo, passenger_onboard, t = await get_counter_data(ser,passenger_onboard)
+
         if not internet:
             internet = connected_to_internet()
             if internet:
                 boot_notification(passenger_onboard)
                 global ws
                 ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
+
+        if datetime.now().hour == 0:
+            passenger_onboard = 0
+
         task = asyncio.create_task(send_data(hi, lo, passenger_onboard, t))
 
 
-async def get_counter_data(ser):
+async def get_counter_data(ser,passenger_onboard):
     ser.read_until(b'\x41\x41')
     hi, lo = struct.unpack('2B', ser.read(2))
     ser.write("0".encode("UTF-8"))
-    return hi, lo
+    passenger_onboard = passenger_onboard + hi - lo
+    t = int(time.time())
+
+    return hi, lo, passenger_onboard, t
 
 
 asyncio.run(main(device,internet))
