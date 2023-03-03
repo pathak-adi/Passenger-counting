@@ -5,35 +5,16 @@ import time
 import requests
 import json
 import serial
-import asyncio
-import logging
+import urllib
+
 from websocket import create_connection
-from utils import boot_notification, connected_to_internet
-
-logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-logging.warning('Boot Notification')
-
-if len(sys.argv) != 2:
-    print("Usage: ./rs485_read.py <RS485 TTY device>")
-    sys.exit(1)
-device = sys.argv[1]
-
-try:
-    ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
-except:
-    ws = []
-    logging.error('Unable to connect to websocket')
-
-internet = connected_to_internet()
-if not internet:
-    logging.error('no internet')
+from utils import boot_notification
 
 
-boot_notification(0)
+def send_data(cin, cout, c_n):
+    url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
+    t = int(time.time())
 
-
-async def send_data(cin, cout, c_n, t):
-    url = 'google.com' #'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
     body = {
         'datetime': t,
         'imei': 'PCounter',
@@ -41,62 +22,53 @@ async def send_data(cin, cout, c_n, t):
     }
     try:
         response = requests.post(url, json.dumps(body))
-        # logging.info(response.json())
+        print(response.json())
     except:
-        logging.error('Error sending data')
-        logging.error(f'Internet connectivity: {connected_to_internet()}')
+        print('Error sending data')
         response = []
-
 
     try:
         item = {
             "action": "sendMessage",
-            "data": json.dumps(
-                {
-                    'datetime': datetime.now().isoformat(),
-                    'imei': 'PCounter',
-                    'data': {'in': cin, 'out': cout, 'count': c_n},
-                }
-            )
+            "data": json.dumps(body)
 
         }
         ws.send(json.dumps(item))
 
     except:
         ws.close()
-        logging.error('websocket error')
     return response
 
 
-async def main(device,internet):
-    ser = serial.Serial(device, 115200, timeout=None)
-    ser.write("0".encode("UTF-8"))
-    passenger_onboard = 0
-
-    while True:
-        hi, lo, passenger_onboard, t = await get_counter_data(ser,passenger_onboard)
-
-        if not internet:
-            internet = connected_to_internet()
-            if internet:
-                boot_notification(passenger_onboard)
-                global ws
-                ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
-
-        if datetime.now().hour == 0:
-            passenger_onboard = 0
-
-        task = asyncio.create_task(send_data(hi, lo, passenger_onboard, t))
+def internet_on():
+    try:
+        urllib.request.urlopen('https://google.com', timeout=10)
+        return True
+    except urllib.request.URLError as err:
+        return False
 
 
-async def get_counter_data(ser,passenger_onboard):
+if len(sys.argv) != 2:
+    print("Usage: ./rs485_read.py <RS485 TTY device>")
+    sys.exit(1)
+device = sys.argv[1]
+
+ser = serial.Serial(device, 115200, timeout=None)
+
+internet = internet_on()
+while internet == False:
+    internet = internet_on()
+    time.sleep(15)
+    print('no intenet')
+
+boot_notification()
+ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
+ser.write("0".encode("UTF-8"))
+passenger_onboard = 0
+while True:
     ser.read_until(b'\x41\x41')
     hi, lo = struct.unpack('2B', ser.read(2))
     ser.write("0".encode("UTF-8"))
     passenger_onboard = passenger_onboard + hi - lo
-    t = int(time.time())
-
-    return hi, lo, passenger_onboard, t
-
-
-asyncio.run(main(device,internet))
+    print(datetime.now(), hi, lo, passenger_onboard)
+    send_data(hi, lo, passenger_onboard)
