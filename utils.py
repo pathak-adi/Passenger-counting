@@ -16,8 +16,9 @@ def connected_to_internet(url='http://www.google.com/', timeout=5):
     return False
 
 
-def boot_notification(passengers):
+def boot_notification():
     # check if connected to internet
+    passengers=0
     resp = connected_to_internet()
     if resp:
         date = datetime.now()
