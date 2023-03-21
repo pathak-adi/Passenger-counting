@@ -71,4 +71,6 @@ while True:
     ser.write("0".encode("UTF-8"))
     passenger_onboard = passenger_onboard + hi - lo
     print(datetime.now(), hi, lo, passenger_onboard)
+    if datetime.now().hour == 0:
+        passenger_onboard = 0
     send_data(hi, lo, passenger_onboard)
