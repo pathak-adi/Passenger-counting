@@ -7,36 +7,31 @@ import json
 import serial
 import urllib
 
-from websocket import create_connection
 from utils import boot_notification
 
 
 def send_data(cin, cout, c_n):
-    url = 'https://94bup2tdy0.execute-api.us-east-1.amazonaws.com/production/data/append'
-    t = int(time.time())
+    url = 'https://analytics.basi-go.com/telematics/api/passenger_counter/'
+    t = str(datetime.now())
 
     body = {
         'datetime': t,
-        'imei': 'PCounter',
-        'data': {'in': cin, 'out': cout, 'count': c_n},
+        'in_count': cin,
+        'out_count': cout,
+        'occupancy': c_n,
+        'vehicle': 'KDH043A'
     }
     try:
-        response = requests.post(url, json.dumps(body))
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        response = requests.post(url,headers=headers, data=json.dumps(body))
         print(response.json())
     except:
         print('Error sending data')
         response = []
 
-    try:
-        item = {
-            "action": "sendMessage",
-            "data": json.dumps(body)
-
-        }
-        ws.send(json.dumps(item))
-
-    except:
-        ws.close()
     return response
 
 
@@ -56,13 +51,12 @@ device = sys.argv[1]
 ser = serial.Serial(device, 115200, timeout=None)
 
 internet = internet_on()
-while internet == False:
+while not internet:
     internet = internet_on()
     time.sleep(15)
     print('no intenet')
 
 boot_notification()
-ws = create_connection("wss://degjo0ipsa.execute-api.us-east-1.amazonaws.com/production")
 ser.write("0".encode("UTF-8"))
 passenger_onboard = 0
 while True:
