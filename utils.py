@@ -51,6 +51,6 @@ def boot_notification():
             server.login(sender_email, password)
             server.sendmail(
                 sender_email,
-                ["kmwaura@basi-go.com", "dorishaba@basi-go.com", "jkaseva@basi-go.com", "apathak@basi-go.com"],
+                ["dorishaba@basi-go.com", "jkaseva@basi-go.com", "apathak@basi-go.com"],
                 message.as_string()
             )
