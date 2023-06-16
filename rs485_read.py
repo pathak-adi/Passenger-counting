@@ -86,3 +86,10 @@ def main():
         line_count[0] += hi
         line_count[1] += lo
         print(line_count)
+
+
+
+if __name__ == '__main__':
+    main_thread = threading.Thread(target=main)
+    main_thread.daemon = True
+    main_thread.start()
