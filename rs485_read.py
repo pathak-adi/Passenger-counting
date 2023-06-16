@@ -79,13 +79,14 @@ def main():
         tic = time.time()
 
         serial_read_time = time.time() - tic
-        print('getting data')
+        # print('getting data')
         hi = get_tof_conf(6)
         lo = get_tof_conf(7)
-        print(f" In Count:{hi} \n Out Count:{lo}")
-        line_count[0] += hi
-        line_count[1] += lo
-        print(line_count)
+        if (hi>0) or (lo>0):
+            print(f" In Count:{hi} \n Out Count:{lo}")
+            line_count[0] += hi
+            line_count[1] += lo
+            print(line_count)
 
 
 
