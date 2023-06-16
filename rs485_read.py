@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 import random
 import sys
@@ -8,6 +8,7 @@ import json
 import serial
 import struct
 import time
+import pytz
 from PyCRC.CRC16 import CRC16
 import subprocess as sp
 
@@ -71,7 +72,7 @@ def get_tof_conf(addr):
 
 def send_data(cin, cout, c_n):
     url = 'https://analytics.basi-go.com/telematics/api/passenger_counter/'
-    t = str(datetime.now())
+    t = str(datetime.now(timezone.utc).astimezone())
 
     body = {
         'datetime': t,
