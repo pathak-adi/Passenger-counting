@@ -72,7 +72,7 @@ def get_tof_conf(addr):
 
 def send_data(cin, cout, c_n):
     url = 'https://analytics.basi-go.com/telematics/api/passenger_counter/'
-    t = str(datetime.now(timezone.utc).astimezone())
+    t = str(datetime.now())
 
     body = {
         'datetime': t,
