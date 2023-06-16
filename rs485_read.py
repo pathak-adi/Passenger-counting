@@ -1,15 +1,17 @@
 import argparse
 import numpy as np
-import datetime
-import threading
+from datetime import datetime
+import requests
 import random
 import sys
-import os
+import json
 import serial
 import struct
 import time
 from PyCRC.CRC16 import CRC16
 import subprocess as sp
+
+from utils import boot_notification
 
 np.set_printoptions(threshold=sys.maxsize, linewidth=200)
 
@@ -28,7 +30,6 @@ cmd_device = args.rs485_dev
 DEV_ADDR = args.dev_addr
 
 ser = serial.Serial(cmd_device, 115207, timeout=None)
-
 
 READ_LENGTH = (2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1,)
 
@@ -68,11 +69,34 @@ def get_tof_conf(addr):
     return data
 
 
+def send_data(cin, cout, c_n):
+    url = 'https://analytics.basi-go.com/telematics/api/passenger_counter/'
+    t = str(datetime.now())
+
+    body = {
+        'datetime': t,
+        'in_count': cin,
+        'out_count': cout,
+        'occupancy': c_n,
+        'vehicle': 'KDH043A'
+    }
+    try:
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(body))
+        print(response.json())
+    except:
+        print('Error sending data')
+
+    return c_n
 
 
 def main():
-
+    boot_notification()
     line_count = [0, 0]
+    occupancy = 0
 
     while (True):
 
@@ -82,12 +106,19 @@ def main():
         # print('getting data')
         hi = get_tof_conf(6)
         lo = get_tof_conf(7)
-        if (hi>0) or (lo>0):
-            print(f" In Count:{hi} \n Out Count:{lo}")
+        if (hi > 0) or (lo > 0):
+
             line_count[0] += hi
             line_count[1] += lo
-            print(line_count)
 
+            occupancy = occupancy + hi - lo
+            print(datetime.now(), hi, lo, occupancy)
+            if datetime.now().hour == 0:
+                passenger_onboard = 0
+
+            occupancy = send_data(hi, lo, occupancy)
+
+            print(line_count)
 
 
 if __name__ == '__main__':
