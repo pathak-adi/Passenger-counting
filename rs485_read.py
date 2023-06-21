@@ -115,7 +115,7 @@ def main():
             occupancy = occupancy + hi - lo
             print(datetime.now(), hi, lo, occupancy)
             if datetime.now().hour == 0:
-                passenger_onboard = 0
+                occupancy = 0
 
             occupancy = send_data(hi, lo, occupancy)
 

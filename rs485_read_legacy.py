@@ -54,7 +54,7 @@ internet = internet_on()
 while not internet:
     internet = internet_on()
     time.sleep(15)
-    print('no intenet')
+    print('no internet')
 
 boot_notification()
 ser.write("0".encode("UTF-8"))
